@@ -1,0 +1,63 @@
+﻿
+@page "/AddNewChild"
+@inject Blazor.HttpClientRepo.IChildToy services;
+@using Blazor.Models;
+
+<h2>"Add a new child"</h2>
+
+
+<EditForm Model="child" OnValidSubmit="AddChild" class="card card-body bg-light mt-3">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group row">
+        <label for="childname" class="col-md-2 col-form-label">Name:</label>
+        <div class="col-md-8">
+            <InputText id="childName" class="form-control" @bind-Value="@child.Name"/>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="childAge" class="col-md-2 col-form-label">Age:</label>
+        <div class="col-md-8">
+            <InputNumber id="childAge" class="form-control" @bind-Value="@child.Age" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="childGender" class="col-md-2 col-form-label">Gender:</label>
+        <div class="col-md-8">
+            <InputText id="childGender" class="form-control" @bind-Value="@child.Gender" />
+        </div>
+    </div>
+       <div class="row">
+     <div class="col-md-12 text-right">
+            <button type="submit" class="btn btn-success">Create</button>
+        </div>
+    </div>
+</EditForm>
+@if (!String.IsNullOrEmpty(msg))
+{
+    <div class="row">
+        <div class="col-md-12 text-right">
+            <p style="color:@color"> @msg</p>
+        </div>
+    </div>
+}
+
+@code {
+    private Child child = new Child();
+    private string msg = "";
+    private string color = "green";
+    private async Task AddChild()
+    {
+        msg = await services.AddNewChild(child);
+        if(msg == "OK")
+        {
+            msg = "The child has been added.";
+
+        }
+        else
+        {
+            msg = msg + "something went wrong.";
+        }
+    }
+
+}

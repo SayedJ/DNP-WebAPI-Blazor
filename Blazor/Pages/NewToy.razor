@@ -1,0 +1,140 @@
+﻿@page "/NewToy"
+@using Blazor.Models;
+@inject Blazor.HttpClientRepo.IChildToy services;
+
+<h3>Add New Toy</h3>
+
+<EditForm Model="toy" OnValidSubmit="AddToy" class="card card-body bg-light mt-3">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group row">
+        <label for="childName" class="col-md-2 col-form-label">Owner:</label>
+        <div class="col-md-10">
+            @if (childrenIds == null)
+            {
+                           }
+            else if (!childrenIds.Any())
+            {
+                <p>No children has been found!</p>
+            }
+            else
+            {
+              <select class="form-control" @bind="childrenIdSelected">
+                    @foreach (var id in childrenIds)
+                    {
+                        <option value="@id">@id</option>
+                    }
+                </select>
+            }
+        
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="childName" class="col-md-2 col-form-label">Owner:</label>
+        <div class="col-md-10">
+            @if (childrenNames == null)
+            {
+
+            }
+            else if (!childrenNames.Any())
+            {
+                <p>No children has been found!</p>
+            }
+            else
+            {
+                <select class="form-control" @bind="childrenNameSelected">
+                    @foreach (var name in childrenNames)
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </select>
+            }
+
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="toyName" class="col-md-2 col-form-label">Name:</label>
+        <div class="col-md-8">
+            <InputText id="toyName" class="form-control" @bind-Value="@toy.Name" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="toyColor" class="col-md-2 col-form-label">Color:</label>
+        <div class="col-md-8">
+            <InputText id="toyColor" class="form-control" @bind-Value="@toy.Color" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="toyCondition" class="col-md-2 col-form-label">Condition:</label>
+        <div class="col-md-8">
+            <InputText id="toyCondition" class="form-control" @bind-Value="@toy.Condition" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="toyIsFavourite" class="col-md-2 col-form-label">Favourite:</label>
+        <div class="col-md-8">
+
+
+            <InputSelect  @bind-Value="@toy.IsFavourite" >
+                <option value="True">Yes</option>
+                <option value="False">No</option>
+            </InputSelect>
+        </div>
+    </div>
+       <div class="row">
+     <div class="col-md-12 text-right">
+            <button type="submit" class="btn btn-success">Create</button>
+        </div>
+    </div>
+</EditForm>
+@if (!String.IsNullOrEmpty(msg))
+{
+    <div class="row">
+        <div class="col-md-12 text-right">
+            <p style="color:@color"> @msg</p>
+        </div>
+    </div>
+}
+
+@code {
+
+
+
+    private string msg = "";
+    private string color = "green";
+    private Toy toy = new Toy();
+    private List<int> childrenIds = new List<int>();
+    private int childrenIdSelected = 0;
+    private List<string> childrenNames = new();
+    private string childrenNameSelected = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        childrenIds = await services.GetChildrenIDs();
+        childrenNames = await services.GetChidrenNames();
+    }
+
+
+
+    //private async Task GetChildrenIDs()
+    //{
+    //    childrenIds = await services.GetChildrenIDs();
+    //}
+    private async Task AddToy()
+    {
+        msg = await services.AddToyToOwner(childrenNameSelected, toy);
+        if(msg == "OK")
+        {
+            msg = "toy has been added.";
+        }
+        else
+        {
+            msg = "Something went wrong.";
+        }
+
+    }
+
+
+
+
+}

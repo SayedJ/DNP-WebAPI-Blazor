@@ -1,0 +1,150 @@
+﻿@page "/"
+@inject Blazor.HttpClientRepo.IChildToy services;
+@using Blazor.Models;
+
+
+
+ <EditForm Model="children" class="card card-body bg-light mt-5">
+     @*   <div class="form-group row">
+            <label for="gender" class="col-md-2 col-form-label">Gender:</label>
+            <div class="col-md-10">
+                
+                <InputSelect id="gender" class="form-control" @bind-Value="@genderSelected" >
+                    <option onselect="true" value="boy">Boy</option>
+                    <option value="girl">Girl</option>
+
+                    </InputSelect>
+                
+                
+            </div>
+        </div>*@
+        <div class="form-group row">
+            <label for="gender" class="col-md-2 col-form-label">Gender:</label>
+            <div class="col-md-10">
+
+                <InputRadioGroup class="form-switch" @bind-Value="@genderSelected">
+                    @foreach(var item in gender){
+                   <InputRadio Value="item"/>  @item    
+                    }
+                </InputRadioGroup>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="gender" class="col-md-2 col-form-label">Is Favorite:</label>
+            <div class="col-md-10">
+                
+                <InputRadioGroup class="form-switch" @bind-Value="@isFavorite">
+                    <InputRadio Value="true"/> Yes   
+                    <InputRadio Value="false"/> No   
+                    </InputRadioGroup>
+
+            </div>
+        </div>
+
+
+@*        <div class="form-group row">
+            <label for="IsFavorite" class="col-md-2 col-form-label">IsFavourite</label>
+            <div class="col-md-10">
+                
+                    <InputSelect id="isFavorite" class="form-control" @bind-Value="@isFavorite">
+                        <option onselect="true" value="True">Yes</option>
+                        <option value="False">No</option>
+                        
+                    </InputSelect>
+            </div>
+        </div>*@
+
+        <div class="row">
+            <div class="col-md-12 text-right">
+                <button type="submit" class="btn btn-success" @onclick="@(() => FilterChildren(isFavorite, genderSelected))"><i class="fa-solid fa-filter"></i></button>
+            </div>
+        </div>
+
+ </EditForm>
+<button class="btn btn-outline-primary" type="button" @onclick="@ShowAllToys"><i class="fa-solid fa-children"></i></button>
+
+
+@if(children == null)
+{
+    
+}
+else if(!children.Any())
+{
+    <p>No children to display</p>
+}
+else{
+
+
+    @foreach(var child in children){
+<h5>@child.Name is @child.Age years old @child.Gender. Their toys include:</h5>
+        
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Toy Name</th>
+                        <th>Color</th>
+                        <th>Condition</th>
+                        <th>Is Favourite?</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in child.Toys)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Color</td>
+                        <td>@item.Condition</td>
+                        <td>@item.IsFavourite</td>
+                        <td><button class="btn btn-outline-danger" @onclick="@(() => RemoveToy(item.ID))" type="button"><i class="fa-solid fa-trash-can"></i></button></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        
+    }
+}
+
+
+@code{
+    private List<Child> children = new();
+    private bool isFavorite = false;
+    private string[] gender = { "boy", "girl", "both"};
+    private string genderSelected = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        children = await services.GetChildren();
+
+
+    }
+    private async Task ShowAllToys()
+    {
+        children = await services.GetChildren();
+    }
+
+    private async Task RemoveToy(int id)
+    {
+        await services.RemoveChild(id);
+    }
+
+    private async Task FilterChildren(bool fav, string gender)
+    {
+        children = await services.GetChildren();
+
+        if (!string.Equals(gender, "both"))
+        {
+
+            children =  children.Where(s => string.Equals(s.Gender , gender)).Where(t => t.Toys.All(b => b.IsFavourite == fav)).ToList();
+            //children = children.Where(s => s.Toys.All(b => b.IsFavourite == fav)).ToList();
+
+        }
+        else
+        {
+            children = children.Where(t => t.Toys.All(b => b.IsFavourite == fav)).ToList();
+
+        }
+    }
+
+}
